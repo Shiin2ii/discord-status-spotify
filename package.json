@@ -1,0 +1,21 @@
+{
+  "name": "discord-lyrics-status",
+  "version": "1.0.0",
+  "description": "Hiển thị lyrics Spotify realtime lên Discord custom status",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1",
+    "open": "^9.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "@yao-pkg/pkg": "^5.11.5"
+  }
+}
