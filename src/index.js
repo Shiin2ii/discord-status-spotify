@@ -116,8 +116,13 @@ async function main() {
     clearToken();
   }
 
-  // Register 401 handler — re-run setup then resume
+  // Register 401 handler — stop everything, re-run setup, then resume
   onUnauthorized(async () => {
+    // Stop polling immediately so no more requests fire during setup
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    if (scheduler) { scheduler.stop(); scheduler = null; }
+    currentTrackId = null;
+
     console.log('\n[Setup] Token hết hạn. Mở trình duyệt để nhập token mới…');
     await runSetup();
     console.log('[Setup] ✓ Token mới đã lưu. Tiếp tục theo dõi nhạc.\n');
