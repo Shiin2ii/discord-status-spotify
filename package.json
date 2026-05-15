@@ -10,12 +10,12 @@
     "build": "node build.mjs"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "open": "^9.1.0"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
-    "@yao-pkg/pkg": "^5.11.5"
+    "@yao-pkg/pkg": "^5.11.5",
+    "esbuild": "^0.25.0"
   }
 }
