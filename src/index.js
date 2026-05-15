@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import { getCurrentTrack } from './spotify.js';
 import { getLyrics } from './lyrics.js';
-import { setCustomStatus, clearCustomStatus } from './status.js';
+import { setCustomStatus, clearCustomStatus, onUnauthorized } from './status.js';
 import { LyricScheduler } from './scheduler.js';
-import { getToken } from './config.js';
+import { getToken, clearToken } from './config.js';
 import { runSetup } from './setup.js';
 
 const POLL_INTERVAL_MS = 1_000;
@@ -96,8 +96,33 @@ async function poll() {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
+let pollInterval = null;
+
+async function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  // Reset track state so next poll re-fetches everything fresh
+  currentTrackId = null;
+  if (scheduler) { scheduler.stop(); scheduler = null; }
+  await poll();
+  pollInterval = setInterval(poll, POLL_INTERVAL_MS);
+}
+
 async function main() {
   console.log('🎵 Discord Lyrics Status starting…');
+
+  // --reset flag: clear saved token and re-run setup
+  if (process.argv.includes('--reset')) {
+    console.log('[Setup] --reset: xóa token và mở lại trang thiết lập…');
+    clearToken();
+  }
+
+  // Register 401 handler — re-run setup then resume
+  onUnauthorized(async () => {
+    console.log('\n[Setup] Token hết hạn. Mở trình duyệt để nhập token mới…');
+    await runSetup();
+    console.log('[Setup] ✓ Token mới đã lưu. Tiếp tục theo dõi nhạc.\n');
+    await startPolling();
+  });
 
   // First-run: no token configured → open browser setup page
   if (!getToken()) {
@@ -108,11 +133,7 @@ async function main() {
     console.log('   Token: OK  |  Nhấn Ctrl+C để dừng.\n');
   }
 
-  // Initial poll immediately
-  await poll();
-
-  // Then poll every 3 seconds
-  setInterval(poll, POLL_INTERVAL_MS);
+  await startPolling();
 }
 
 // Handle graceful shutdown

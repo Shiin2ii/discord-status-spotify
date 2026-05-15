@@ -1,8 +1,14 @@
-import { getToken } from './config.js';
+import { getToken, clearToken } from './config.js';
 
 const API = 'https://discord.com/api/v9/users/@me/settings';
 
 let lastText = null;
+let _onUnauthorized = null;
+
+/** Register a callback to be called when Discord returns 401. */
+export function onUnauthorized(cb) {
+  _onUnauthorized = cb;
+}
 
 // ── Queue ─────────────────────────────────────────────────────────────────────
 // Each entry: { body, label }
@@ -35,6 +41,16 @@ async function processQueue() {
         console.warn(`[Status] Rate limited — waiting ${wait}ms then retrying…`);
         await new Promise((r) => setTimeout(r, wait));
         continue; // retry same entry
+      }
+
+      if (res.status === 401) {
+        console.error('[Status] 401 Unauthorized — token không hợp lệ hoặc đã hết hạn.');
+        queue.length = 0; // drain queue
+        lastText = null;
+        clearToken();
+        processing = false;
+        _onUnauthorized?.();
+        return;
       }
 
       if (!res.ok) {

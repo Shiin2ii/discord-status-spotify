@@ -31,6 +31,21 @@ export function getToken() {
 }
 
 /**
+ * Remove saved token from AppData.
+ */
+export function clearToken() {
+  _cache = null;
+  try {
+    if (existsSync(CONFIG_FILE)) {
+      const updated = { ...read() };
+      delete updated.userToken;
+      writeFileSync(CONFIG_FILE, JSON.stringify(updated, null, 2), 'utf8');
+    }
+  } catch {}
+  console.log('[Config] Token cleared.');
+}
+
+/**
  * Persist a new token to AppData.
  */
 export function saveToken(token) {
