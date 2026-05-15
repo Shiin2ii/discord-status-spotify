@@ -8,6 +8,8 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)]()
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green.svg)]()
 
+**Language:** English · [Tiếng Việt](README.vi.md)
+
 [Download](#-download) · [How it works](#-how-it-works) · [Run from source](#-run-from-source) · [Build](#-build-exe)
 
 </div>
