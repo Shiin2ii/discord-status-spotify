@@ -1,9 +1,15 @@
 {
   "name": "discord-lyrics-status",
   "version": "1.0.0",
-  "description": "Hiển thị lyrics Spotify realtime lên Discord custom status",
+  "description": "Real-time Spotify lyrics displayed as your Discord custom status",
   "type": "module",
   "main": "src/index.js",
+  "author": "Shiin2ii",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shiin2ii/discord-status-spotify.git"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
@@ -11,8 +17,7 @@
   },
   "dependencies": {
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "open": "^9.1.0"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^5.11.5",
