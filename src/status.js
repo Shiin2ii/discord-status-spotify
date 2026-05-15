@@ -18,6 +18,23 @@ export function onUnauthorized(cb) {
 const queue = [];
 let processing = false;
 
+const SUPER_PROPERTIES = Buffer.from(JSON.stringify({
+  os: 'Windows',
+  browser: 'Chrome',
+  device: '',
+  system_locale: 'en-US',
+  browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  browser_version: '124.0.0.0',
+  os_version: '10',
+  referrer: '',
+  referring_domain: '',
+  referrer_current: '',
+  referring_domain_current: '',
+  release_channel: 'stable',
+  client_build_number: 9999,
+  client_event_source: null,
+})).toString('base64');
+
 async function processQueue() {
   if (processing) return;
   processing = true;
@@ -31,6 +48,10 @@ async function processQueue() {
           Authorization: entry.token,
           'Content-Type': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'X-Super-Properties': SUPER_PROPERTIES,
+          'X-Discord-Locale': 'en-US',
+          'Origin': 'https://discord.com',
+          'Referer': 'https://discord.com/channels/@me',
         },
         body: JSON.stringify(entry.body),
       });
@@ -44,16 +65,27 @@ async function processQueue() {
       }
 
       if (res.status === 401) {
-        console.error('[Status] 401 Unauthorized — token không hợp lệ hoặc đã hết hạn.');
-        queue.length = 0; // drain queue
-        lastText = null;
-        clearToken();
-        processing = false;
-        _onUnauthorized?.();
-        return;
-      }
+        // Verify if the token itself is actually invalid before clearing it.
+        // The PATCH settings endpoint can return 401 for reasons unrelated to
+        // the token (e.g. missing headers), so we check against /users/@me first.
+        const check = await fetch('https://discord.com/api/v9/users/@me', {
+          headers: { Authorization: entry.token },
+        }).catch(() => null);
 
-      if (!res.ok) {
+        if (check?.status === 401) {
+          // Token is genuinely expired/invalid
+          console.error('[Status] Token hết hạn. Mở lại trang thiết lập…');
+          queue.length = 0;
+          lastText = null;
+          clearToken();
+          processing = false;
+          _onUnauthorized?.();
+          return;
+        }
+
+        // Token is fine — PATCH failed for another reason, just skip this entry
+        console.warn('[Status] PATCH settings bị từ chối (401) nhưng token vẫn hợp lệ — bỏ qua.');
+      } else if (!res.ok) {
         const text = await res.text().catch(() => '');
         console.error(`[Status] PATCH ${res.status}: ${text}`);
       } else {
