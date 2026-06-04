@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 Discord Lyrics Status
+#  Discord Lyrics Status (APP)
 
 **Real-time Spotify lyrics displayed as your Discord custom status.**
 
